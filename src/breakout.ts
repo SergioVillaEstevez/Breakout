@@ -1,5 +1,5 @@
 
-let canvas =  document.getElementById("gameCanvas") as HTMLCanvasElement;
+let canvas  =  document.getElementById("gameCanvas") as HTMLCanvasElement;
 
 const ctx = canvas.getContext("2d")
 
@@ -7,28 +7,109 @@ const ctx = canvas.getContext("2d")
 if(!ctx) throw new  Error("No se pudo obtener el contexto 2D")
 
 
-let x= 50
-let y= 50
-let dx= 0.5
-let dy= 0.5
+let x= 210
+let y= 250
+let dx= 1
+let dy= 1
 
 let ballColor="" 
 
 let paletaX= 205
 const paletaY= 290
-let paletaXmas= 0.5
+let paletaXmas= 0.8
+
+
+const blockRowCount = 7;
+const blockColumnCount = 10;
+const blockWidth = 50;
+const blockHeight = 20;
+const blockPaddingX = 0; // espacio horizontal
+const blockPaddingY = 0;
+const blockOffsetTop = 0;
+const blockOffsetLeft = 0;
+
+const blocks : {x: number, y: number, status: number}[][]=[]
+
+
+for (let fila = 0; fila< blockRowCount; fila++){
+
+     blocks[fila] = [];
+
+    for(let columna =0; columna< blockColumnCount;columna++){
+
+            blocks[fila][columna]= {x:0,y:0,status:1}
+    }
+
+
+}
+
+//colision bloques
+
+const collisionDetection =()=>{
+
+    for(let fila= 0; fila< blockRowCount; fila++){
+        for (let columna = 0; columna < blockColumnCount; columna++){
+
+            const block = blocks[fila][columna];
+
+            if(block.status === 1){
+
+                if(x>block.x && x < block.x + blockWidth && y> block.y && y< block.y + blockHeight){
+
+                    dy= -dy;
+                    block.status=0;
+
+                }
+
+            }
+
+
+        }
+    }
+
+}
+
+
+
+//Dibujar bloques
+
+const drawBloques=()=>{
+    for (let fila=0;fila<blockRowCount;fila++){
+        for(let columna=0; columna< blockColumnCount;columna++){
+
+                const block = blocks[fila][columna];
+
+                if(block.status===1){
+                    let blockX= (columna * (blockWidth + blockPaddingX) + blockOffsetLeft);
+                    let blockY=(fila * blockHeight) + blockOffsetTop;
+
+
+                    block.x=blockX;
+                    block.y=blockY;
+
+                    ctx.beginPath();
+                    ctx.rect(blockX,blockY, blockWidth,blockHeight)
+                    ctx.strokeStyle = "white";
+                    ctx.fillStyle="green"
+                    ctx.strokeRect(blockX, blockY, blockWidth, blockHeight);
+                    
+                    ctx.fill();
+                    ctx.closePath();
+
+
+                }
+            
 
 
 
 
+        }
+    }
+}
 
-canvas.addEventListener("click", ()=>{
 
 
-        dx= -dx;
-        dy=-dy;
 
-})
 //dibujo de pelota
 const drawBall = (ballColor)=>{
 ctx.beginPath();
@@ -74,9 +155,11 @@ document.addEventListener("keydown", (event) => {
 const gameLoop =()=>{
 
     clear();
-    
+    drawBloques();
     drawPaleta("black");
     drawBall("red");
+
+    collisionDetection()
     
     x+=dx;
     y+=dy;
@@ -99,7 +182,7 @@ const gameLoop =()=>{
     if(y+10 > paletaY && x >= paletaX && x<= paletaX+80){
         dy=-dy
         
-        dy *= 1.1; 
+        //dy *= 1.1; 
       
     }
 
