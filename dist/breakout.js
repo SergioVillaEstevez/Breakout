@@ -2,10 +2,12 @@ var canvas = document.getElementById("gameCanvas");
 var ctx = canvas.getContext("2d");
 if (!ctx)
     throw new Error("No se pudo obtener el contexto 2D");
+var marcador;
 var x = 210;
 var y = 250;
-var dx = 1;
 var dy = 1;
+var dx = 1;
+var vida = 3;
 var ballColor = "";
 var paletaX = 205;
 var paletaY = 290;
@@ -39,6 +41,12 @@ var collisionDetection = function () {
         }
     }
 };
+// dibujar vidas
+var drawVidas = function () {
+    ctx.font = "16px Arial"; // tamaño y fuente
+    ctx.fillStyle = "white"; // color del texto
+    ctx.fillText("Vidas: " + vida, 200, 270); // x=10, y=20
+};
 //Dibujar bloques
 var drawBloques = function () {
     for (var fila = 0; fila < blockRowCount; fila++) {
@@ -51,8 +59,8 @@ var drawBloques = function () {
                 block.y = blockY;
                 ctx.beginPath();
                 ctx.rect(blockX, blockY, blockWidth, blockHeight);
-                ctx.strokeStyle = "white";
-                ctx.fillStyle = "green";
+                ctx.strokeStyle = "black";
+                ctx.fillStyle = "pink";
                 ctx.strokeRect(blockX, blockY, blockWidth, blockHeight);
                 ctx.fill();
                 ctx.closePath();
@@ -87,20 +95,42 @@ document.addEventListener("keydown", function (event) {
 var gameLoop = function () {
     clear();
     drawBloques();
-    drawPaleta("black");
-    drawBall("red");
+    drawVidas();
+    drawPaleta("pink");
+    drawBall("white");
     collisionDetection();
     x += dx;
     y += dy;
     if (x + 10 > canvas.width || x - 10 < 0) {
         dx = -dx;
     }
-    if (y + 10 > canvas.height || y - 10 < 0) {
-        dy = -dy;
+    if (y + 10 > paletaY) {
+        if (x >= paletaX && x <= paletaX + 80) {
+            // rebote en la paleta
+            dy = -dy;
+            y = paletaY - 10; // ajustar posición para no atascar
+        }
+        else if (y + 10 > canvas.height) {
+            if (vida > 0) {
+                x = 210;
+                y = 250;
+                paletaX = 205;
+                paletaY = 290;
+                dy = 1;
+                dx = 1;
+                vida = vida - 1;
+            }
+        }
     }
     if (y + 10 > paletaY && x >= paletaX && x <= paletaX + 80) {
         dy = -dy;
-        //dy *= 1.1; 
+        y = paletaY - 10;
+        dx = dx * 1.1;
+        dy = dy * 1.1;
+    }
+    if (vida === 0) {
+        alert("Game over");
+        document.location.reload();
     }
     requestAnimationFrame(gameLoop);
 };

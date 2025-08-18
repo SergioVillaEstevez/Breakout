@@ -4,18 +4,20 @@ let canvas  =  document.getElementById("gameCanvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")
 
 
-if(!ctx) throw new  Error("No se pudo obtener el contexto 2D")
+    if(!ctx) throw new  Error("No se pudo obtener el contexto 2D")
 
-
+let marcador; 
 let x= 210
 let y= 250
-let dx= 1
 let dy= 1
+let dx= 1
 
-let ballColor="" 
+let vida: number=3; 
+
+let ballColor: string ="" 
 
 let paletaX= 205
-const paletaY= 290
+let paletaY= 290
 let paletaXmas= 0.8
 
 
@@ -68,6 +70,12 @@ const collisionDetection =()=>{
     }
 
 }
+// dibujar vidas
+const drawVidas = () => {
+    ctx.font = "16px Arial";       // tamaño y fuente
+    ctx.fillStyle = "white";       // color del texto
+    ctx.fillText("Vidas: " + vida, 200, 270); // x=10, y=20
+};
 
 
 
@@ -89,8 +97,8 @@ const drawBloques=()=>{
 
                     ctx.beginPath();
                     ctx.rect(blockX,blockY, blockWidth,blockHeight)
-                    ctx.strokeStyle = "white";
-                    ctx.fillStyle="green"
+                    ctx.strokeStyle = "black";
+                    ctx.fillStyle="pink"
                     ctx.strokeRect(blockX, blockY, blockWidth, blockHeight);
                     
                     ctx.fill();
@@ -111,7 +119,7 @@ const drawBloques=()=>{
 
 
 //dibujo de pelota
-const drawBall = (ballColor)=>{
+const drawBall = (ballColor:string)=>{
 ctx.beginPath();
 ctx.arc(x, y, 10, 0, Math.PI * 2);
 ctx.fillStyle = ballColor;
@@ -123,7 +131,7 @@ const clear = ()=>{ctx.clearRect(0,0,canvas.width,canvas.height)}
 
 
 //dibujo de Paleta
-const drawPaleta = (ballColor)=>{
+const drawPaleta = (ballColor:string)=>{
     
     
     ctx.fillStyle=ballColor
@@ -156,8 +164,9 @@ const gameLoop =()=>{
 
     clear();
     drawBloques();
-    drawPaleta("black");
-    drawBall("red");
+    drawVidas();
+    drawPaleta("pink");
+    drawBall("white");
 
     collisionDetection()
     
@@ -171,19 +180,45 @@ const gameLoop =()=>{
 
     }
 
-    if(y + 10 > canvas.height || y-10< 0){
+  if (y + 10 > paletaY) {
+    if (x >= paletaX && x <= paletaX + 80) {
+        // rebote en la paleta
         dy = -dy;
+        y = paletaY - 10; // ajustar posición para no atascar
+    } else if (y + 10 > canvas.height) {
+        if(vida>0){
+            x= 210
+            y= 250
+            paletaX= 205
+            paletaY= 290
+
+             dy= 1
+                dx= 1
+            vida= vida - 1
+            
+        }
 
         
-        
-       
     }
+}
 
     if(y+10 > paletaY && x >= paletaX && x<= paletaX+80){
         dy=-dy
+
+        y= paletaY -10
+
+        dx= dx*1.1;
+        dy= dy*1.1;
         
-        //dy *= 1.1; 
+     
       
+    }
+
+    if(vida===0){
+
+        alert("Game over")
+        document.location.reload()
+        
     }
 
 
